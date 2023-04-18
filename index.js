@@ -32,6 +32,9 @@ exports.handler = async (event, context, callback) => {
   if (answer != null) {
     answer = answer.replace('\n\n', '');
     categories = answer.split('#');
+    categories.forEach(function (item, index, arr) {
+      if (item === 'etc') arr[index] = '기타';
+    })
   }
   callback(null, { categories: categories });
 };
