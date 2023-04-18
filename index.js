@@ -13,25 +13,25 @@ const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event, context, callback) => {
   const { keyword } = event;
-  const message = `'${keyword}'은 반찬, 간식, 식재료, 기타 중 어느 카테고리?`;
-  let category = "";
+  const message = `Choose the category of '${keyword}' belongs to among '육류', '과일', '채소', '음료', '수산물', '반찬', '간식', '조미료', '가공식품', 'etc' up to 2.  You should follow this rule: if only one category -> "word", if two category -> "word#word".`;
+  let answer = "";
+  let categories = [];
   const response = await openai.createCompletion({
     model: "text-davinci-003",
     prompt: message,
-    max_tokens: 4000,
     temperature: 0,
+    max_tokens: 700,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
   });
   if (response.data) {
-    if (response.data.choices) category = response.data.choices[0].text;
-    else category = "기타";
+    if (response.data.choices) answer = response.data.choices[0].text;
+    else answer = null;
   }
-  callback(null, { category: category });
+  if (answer != null) {
+    answer = answer.replace('\n\n', '');
+    categories = answer.split('#');
+  }
+  callback(null, { categories: categories });
 };
-
-function getOneWord(text) {
-  if (text) {
-    let startIndex = text.indexOf('"');
-    let lastIndex = text.lastIndexOf('"');
-    return text.substring(startIndex + 1, lastIndex);
-  }
-}
