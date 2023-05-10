@@ -13,7 +13,7 @@ const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event, context, callback) => {
   const { keyword } = event;
-  const message = `Choose the category of '${keyword}' belongs to among '육류', '과일', '채소', '음료', '수산물', '반찬', '간식', '조미료', '가공식품', 'etc' up to 2.  You should follow this rule: if only one category -> "word", if two category -> "word#word".`;
+  const message = `Choose the category of '${keyword}' belongs to among '육류', '과일', '채소', '음료', '수산물', '반찬', '간식', '조미료', '가공식품', 'etc' up to 1.  You should follow this rule: "word" in Korean.`;
   let answer = "";
   let categories = [];
   const response = await openai.createCompletion({
