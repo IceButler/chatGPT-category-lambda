@@ -18,25 +18,16 @@ exports.handler = async (event, context, callback) => {
   let answer = "";
   let categories = [];
 
-  fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: message }],
-      temperature: 0,
-    }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.choices) answer = data.choices[0].message.content;
-      else answer = null;
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [{ role: "user", content: message }],
+    temperature: 0,
+  });
 
-      categories.push(answer);
-      callback(null, { categories: categories });
-    }
-    );
+  if (response.data) {
+    if (response.data.choices) answer = response.data.choices[0].message.content;
+    else answer = null;
+  }
+  categories.push(answer);
+  callback(null, { categories: categories });
 };
