@@ -13,28 +13,29 @@ const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event, context, callback) => {
   const { keyword } = event;
-  const message = `Choose the category of '${keyword}' belongs to among '육류', '과일', '채소', '음료', '수산물', '반찬', '간식', '조미료', '가공식품', 'etc' up to 2.  You should follow this rule: if only one category -> "word", if two category -> "word#word".`;
+  const message = `There are only '육류', '과일', '채소', '음료', '수산물', '반찬', '조미료', '가공식품' categories in the world. Please choose which category '${keyword}' belongs to. If nothing belongs to this, say '기타'. You should tell me in only Korean, Don't ever speak English and follow this rule, {category}`;
   let answer = "";
   let categories = [];
-  const response = await openai.createCompletion({
-    model: "text-davinci-003",
-    prompt: message,
-    temperature: 0,
-    max_tokens: 700,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  });
-  if (response.data) {
-    if (response.data.choices) answer = response.data.choices[0].text;
-    else answer = null;
-  }
-  if (answer != null) {
-    answer = answer.replace('\n\n', '');
-    categories = answer.split('#');
-    categories.forEach(function (item, index, arr) {
-      if (item === 'etc') arr[index] = '기타';
-    })
-  }
-  callback(null, { categories: categories });
+
+  fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+      temperature: 0,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.choices) answer = data.choices[0].message.content;
+      else answer = null;
+
+      categories.push(answer);
+      callback(null, { categories: categories });
+    }
+    );
 };
